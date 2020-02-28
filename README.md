@@ -1,6 +1,6 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+The current repository contains a library to control the siglent sds1202 oscilloscope using python.
 
 ### What is this repository for? ###
 
@@ -13,6 +13,12 @@ This README would normally document whatever steps are necessary to get your app
 * Summary of set up
 * Configuration
 * Dependencies
+- Based on python 3, don't use python 2
+- requrires python SCPI libraries
+- pip install scpi
+- uses socket library (comes installed by default with python)
+
+
 * Database configuration
 * How to run tests
 * Deployment instructions
@@ -25,5 +31,5 @@ This README would normally document whatever steps are necessary to get your app
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
+* Raul.quesadanavarro@raquenaengineering.com
 * Other community or team contact
