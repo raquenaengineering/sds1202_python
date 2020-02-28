@@ -1,0 +1,47 @@
+
+
+First of all:
+
+If using the wired connection for the oscilloscope, and wifi for internet,
+to change preference in connection between eth and wifi needed:
+
+in etc/dhcpcd.conf
+
+interface eth0
+metric 300
+
+interface wlan0
+metric 200
+
+TELNET:
+
+Installing telnet to ensure the connetion with the remote device is 
+available is recommended
+
+sudo apt install telnet
+$ telnet
+> open 192.168.42.190 5024
+
+The previous commands (please note the IP may change) should return 
+meassage notifying the connection from the remote oscilloscope.
+
+SOCKETS:
+
+Sockets come by default with python3 and are required to establish
+a connection between the oscilloscope and a computer using python
+
+
+SCPI: 
+
+Scpi is a protocol to connect specifically to measurement and test devices
+like oscilloscopes, function generators and others. 
+
+It gives the possibility to use different interfaces (serial, usb, ethernet).
+
+The goal is to implement the sds1202 to use SCPI if possible.
+
+VISA:
+
+It may also be possible to connect the instrument via USB, using the 
+VISA libraries.
+They are available for python, but may not be open source.
