@@ -1,13 +1,13 @@
 
 
 
-from sds_1202x_e import *
+from sds1202 import *
 
 
 # GLOBAL VARIABLES #####################################################
 
 remote_ip = "192.168.42.190"
-port = 5024
+sock_port = 5024
 
 # required by user_manual_test
 
@@ -66,9 +66,24 @@ if __name__ == "__main__":
 	
 	#user_manual_test()
 	
-	oscilloscope = sds1202()
-	oscilloscope.connect()
-
+	osc = sds1202(remote_ip, sock_port)			# try to implement a network search to find the oscilloscope (FUTURE GOALS, NOT NOW)
+	osc.connect()
+	osc.send_command(b'*IDN?')
+	desc = osc.receive_command()
+	print(desc)
+	
+	osc.send_command(b'BUZZ OFF')				# disables beeping, no response is expected
+	
+	osc.send_command(b'C1:WF? DAT2')			# gets data from channel 1 waveform ?? don't understand
+	waveform_bytes = osc.receive_command()
+	print(waveform_bytes)
+		
+	# create a file and store waveform data
+	print("Trying to save onto a file")
+	waveform = waveform_bytes.decode()
+	wave_file = open("wave.txt",'w')
+	wave_file.write(waveform)
+	wave_file.close()
 
 
 
