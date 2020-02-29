@@ -66,36 +66,20 @@ def test_get_save_wave():							# gets a wave from osc, processes it to the righ
 	# get information about the current 
 	
 	
-	osc.get_timebase()
+	# osc.get_timebase()
+	# osc.get_sample_rate()
+	# osc.get_vdiv_ch1()
+	# osc.get_offset_ch1()
+	# osc.get_vdiv_ch2()
+	# osc.get_offset_ch1()
+	# osc.get_offset_ch2()
+	# osc.get_parameter(b'TDIV?')
 	
-	osc.get_parameter(b'TDIV?')
-	
-	osc.get_parameter(b'SARA?')
-	
-	
+
+	osc.get_osc_current_config()
+
 	osc.print_osc_config_params()
 	
-	
-	
-	
-	
-	
-	osc.send_command(b'C1:VDIV?')			#  get volts per division channel 1 
-	vdiv_bytes = osc.receive_command()
-	print(vdiv_bytes)
-	
-	osc.send_command(b'C1:OFST?')			# get offset channel 1
-	vdiv_bytes = osc.receive_command()
-	print(vdiv_bytes)
-		
-	osc.send_command(b'TDIV?')				# time scale 
-	vdiv_bytes = osc.receive_command()
-	print(vdiv_bytes)
-				
-	osc.send_command(b'SARA?')				# get offset channel 1
-	vdiv_bytes = osc.receive_command()
-	print(vdiv_bytes)
-				
 	
 	osc.send_command(b'C1:WF? DAT2')			# gets data from channel 1 waveform ?? don't understand
 	waveform_bytes = osc.receive_command()

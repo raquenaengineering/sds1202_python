@@ -34,7 +34,7 @@ class sds1202():
 	volt_div_a = None;							# volts per division, for each channel
 	volt_div_b = None;							# float numbers
 	
-	voffs_a = None;								# offsets 
+	voffs_a = None;								# offsets NOTE: offset values are relative to volts per divission !!!
 	voffs_b = None;								# float numbers
 	
 	timebase = None;							# time base of our measurements, common to both channels
@@ -79,7 +79,7 @@ class sds1202():
 		logging.debug("send_command method was called")
 		try:
 			self.sock.sendall(cmd)
-			time.sleep(1)								# maybe not necessary??? check how to do this async.
+			time.sleep(0.1)								# works fine as short as 0.1 # maybe not necessary??? check how to do this async.
 		except socket.error:
 			logging.error("Failed to send")
 			logging.error("QUITTING")
@@ -120,6 +120,8 @@ class sds1202():
 		logging.debug("PARAM")
 		logging.debug(param)
 		
+		return(param)
+		
 		# param_val = param_bytes.split(b'E')
 		# param_mantissa = param_val[0]
 		# param_mantissa = param_mantissa.decode()
@@ -136,54 +138,88 @@ class sds1202():
 
 		# param = param_mantissa*10**param_exp
 	
-	def get_timebase(self):								#keep in mind most of this process is common to most of the parameters!!! (waveforms different)
-		self.send_command(b'TDIV?')
-		timebase_bytes = self.receive_command()
-		logging.debug("timebase byte array:")
-		logging.debug(timebase_bytes)
-		# divide between header and data 
-		timebase_array = timebase_bytes.split(b' ')
-		logging.debug("Timebase after split")
-		logging.debug(timebase_array)
-		# here comes the check if the received message is what was expected:
-		if(timebase_array[0] == b'TTDIV'):
-			logging.debug("Response seems to be right")
-			timebase_val = timebase_array[1]
-			timebase_val = timebase_val.split(b'E')
-			logging.debug("Timebase_val after split")
-			logging.debug(timebase_val)	
-			timebase_mantissa_bytes = timebase_val[0]
-			timebase_mantissa_str = timebase_mantissa_bytes.decode()
-			logging.debug("Timebase_mantissa_str: "+ timebase_mantissa_str)
-			timebase_mantissa = float(timebase_mantissa_str)
-			logging.debug("Timebase_mantissa: ")
-			logging.debug(timebase_mantissa)
-			timebase_exp_bytes = timebase_val[1]			
-			timebase_exp_bytes = timebase_exp_bytes[0:3]	# exponent has fix size, on this way we get rid of everything else			
-			logging.debug(timebase_exp_bytes)
-			timebase_exp_str = timebase_exp_bytes.decode()
-			logging.debug("Timebase_exp_str: "+ timebase_exp_str)			
-			timebase_exp = int(timebase_exp_str)
-			logging.debug("Timebase_exp:")
-			logging.debug(timebase_exp)
+	
+	def get_sample_rate(self):
+			sample_rate = self.get_parameter(b'SARA?')
+			self.sample_rate = sample_rate
+			return(sample_rate)
+	
+	def get_timebase(self):								#keep in mind most of this process is common to most of the parameters!!! (waveforms different)		
+			timebase = self.get_parameter(b'TDIV?')
+			self.timebase = timebase
+			return(timebase)						# maybe better to return ok and thats all
 			
-			timebase = timebase_mantissa*10**timebase_exp
+	def get_vdiv_ch1(self):
+			vdiv = self.get_parameter(b'C1:VDIV?')
+			self.volt_div_a = vdiv
+			return(vdiv)						# maybe better to return ok and thats all
+	
+	def get_vdiv_ch2(self):
+			vdiv = self.get_parameter(b'C2:VDIV?')
+			self.volt_div_b = vdiv
+			return(vdiv)	
+
+	def get_offset_ch1(self):
+			voffs = self.get_parameter(b'C1:OFST?')
+			voffs = voffs*self.volt_div_a
+			self.voffs_a = voffs
+			return(voffs)						# maybe better to return ok and thats all
+
+	def get_offset_ch2(self):
+			voffs = self.get_parameter(b'C2:OFST?')
+			voffs = voffs*self.volt_div_b			# this is not very clear !!!
+			self.voffs_b = voffs
+			return(voffs)						# maybe better to return ok and thats all
+
+		
+		# THIS IS THE OLD IMPLEMENTATION keep in mind
+		# IF: check could still be used to determine if receiving the rigth message
+		
+		# self.send_command(b'TDIV?')
+		# timebase_bytes = self.receive_command()
+		# logging.debug("timebase byte array:")
+		# logging.debug(timebase_bytes)
+		# # divide between header and data 
+		# timebase_array = timebase_bytes.split(b' ')
+		# logging.debug("Timebase after split")
+		# logging.debug(timebase_array)
+		# # here comes the check if the received message is what was expected:
+		# if(timebase_array[0] == b'TTDIV'):
+			# logging.debug("Response seems to be right")
+			# timebase_val = timebase_array[1]
+			# timebase_val = timebase_val.split(b'E')
+			# logging.debug("Timebase_val after split")
+			# logging.debug(timebase_val)	
+			# timebase_mantissa_bytes = timebase_val[0]
+			# timebase_mantissa_str = timebase_mantissa_bytes.decode()
+			# logging.debug("Timebase_mantissa_str: "+ timebase_mantissa_str)
+			# timebase_mantissa = float(timebase_mantissa_str)
+			# logging.debug("Timebase_mantissa: ")
+			# logging.debug(timebase_mantissa)
+			# timebase_exp_bytes = timebase_val[1]			
+			# timebase_exp_bytes = timebase_exp_bytes[0:3]	# exponent has fix size, on this way we get rid of everything else			
+			# logging.debug(timebase_exp_bytes)
+			# timebase_exp_str = timebase_exp_bytes.decode()
+			# logging.debug("Timebase_exp_str: "+ timebase_exp_str)			
+			# timebase_exp = int(timebase_exp_str)
+			# logging.debug("Timebase_exp:")
+			# logging.debug(timebase_exp)
 			
-			# THIS WAY DOESN'T SEEM TO WORK, BUT WOULD BE CONVENIENT, IT REQUIRES LESS OPERATIONS #
+			# timebase = timebase_mantissa*10**timebase_exp
 			
-			timebase_val = timebase_array[1]
-			timebase_val = timebase_val[0:8]				# only 7 significant numbers, 3 for mantissa,1 separator, 3 for exp
-			timebase_val = timebase_val.decode()
-			#timebase_val.replace('E','e')
-			timebase_val = float(timebase_val)
+			# # THIS WAY DOESN'T SEEM TO WORK, BUT WOULD BE CONVENIENT, IT REQUIRES LESS OPERATIONS #
 			
-			logging.debug("TIMEBASE_VAL")
-			logging.debug(timebase_val)
+			# timebase_val = timebase_array[1]
+			# timebase_val = timebase_val[0:8]				# only 7 significant numbers, 3 for mantissa,1 separator, 3 for exp
+			# timebase_val = timebase_val.decode()
+			# #timebase_val.replace('E','e')
+			# timebase_val = float(timebase_val)
 			
+			# logging.debug("TIMEBASE_VAL")
+			# logging.debug(timebase_val)
+	
 				
-			self.timebase = timebase	
-				
-			return timebase
+			
 			
 			
 			
@@ -191,14 +227,14 @@ class sds1202():
 			#timebase_mantissa = float(timebase_mantissa_str)			
 		
 	def get_osc_current_config(self):							# queries all current configuration parameters of the oscilloscope	
-														# and stores them into the mirror values at the python object, for its use.
-		pass
-		# get_timebase			# TDIV?
-		# get_sampling_rate		# SARA?
-		# get_voltsdiv_a		# C1:VDIV?
-		# get_voltsdiv_b
-		# get_voffset_a			# C1:OFST?
-		# get_voffset_b
+																# and stores them into the mirror values at the python object, for its use.	
+		self.get_timebase()
+		self.get_sample_rate()
+		self.get_vdiv_ch1()
+		self.get_offset_ch1()
+		self.get_vdiv_ch2()
+		self.get_offset_ch1()
+		self.get_offset_ch2()
 		
 		
 	# def get_data(self,cmd):
@@ -221,7 +257,7 @@ class sds1202():
 		print("Volts/Div Channel A: ")
 		print(self.volt_div_a)
 		print("Volts/Div Channel B: ")
-		print(self.volt_div_a)
+		print(self.volt_div_b)
 		print("Voffset. Channel A: ")
 		print(self.voffs_a)
 		print("Voffset. Channel B: ")
