@@ -60,6 +60,58 @@ def user_manual_test():
 	print(query_string)
 
 
+
+def test_get_save_wave():							# gets a wave from osc, processes it to the right format, and saves it to file
+	
+	# get information about the current 
+	
+	
+	osc.get_timebase()
+	
+	osc.get_parameter(b'TDIV?')
+	
+	osc.get_parameter(b'SARA?')
+	
+	
+	osc.print_osc_config_params()
+	
+	
+	
+	
+	
+	
+	osc.send_command(b'C1:VDIV?')			#  get volts per division channel 1 
+	vdiv_bytes = osc.receive_command()
+	print(vdiv_bytes)
+	
+	osc.send_command(b'C1:OFST?')			# get offset channel 1
+	vdiv_bytes = osc.receive_command()
+	print(vdiv_bytes)
+		
+	osc.send_command(b'TDIV?')				# time scale 
+	vdiv_bytes = osc.receive_command()
+	print(vdiv_bytes)
+				
+	osc.send_command(b'SARA?')				# get offset channel 1
+	vdiv_bytes = osc.receive_command()
+	print(vdiv_bytes)
+				
+	
+	osc.send_command(b'C1:WF? DAT2')			# gets data from channel 1 waveform ?? don't understand
+	waveform_bytes = osc.receive_command()
+	print(waveform_bytes)
+	#
+	# create a file and store waveform data
+	print("Trying to save onto a file")
+	waveform = waveform_bytes.decode()
+	wave_file = open("wave.txt",'w')
+	wave_file.write(waveform)
+	wave_file.close()
+
+
+
+
+
 # MAIN FUNCTION ########################################################
 
 if __name__ == "__main__":
@@ -68,23 +120,69 @@ if __name__ == "__main__":
 	
 	osc = sds1202(remote_ip, sock_port)			# try to implement a network search to find the oscilloscope (FUTURE GOALS, NOT NOW)
 	osc.connect()
-	osc.send_command(b'*IDN?')
+	osc.send_command(b'*IDN?')					# asks for device description
 	desc = osc.receive_command()
 	print(desc)
-	
-	osc.send_command(b'BUZZ OFF')				# disables beeping, no response is expected
-	
-	osc.send_command(b'C1:WF? DAT2')			# gets data from channel 1 waveform ?? don't understand
-	waveform_bytes = osc.receive_command()
-	print(waveform_bytes)
-		
-	# create a file and store waveform data
-	print("Trying to save onto a file")
-	waveform = waveform_bytes.decode()
-	wave_file = open("wave.txt",'w')
-	wave_file.write(waveform)
-	wave_file.close()
 
+
+	test_get_save_wave()
+
+
+
+
+
+
+
+	# osc.send_command(b'*OPC?')					# are all operations complete ?? (useful to block until done with config, or sending signal)
+	# desc = osc.receive_command()
+	# print(desc)
+
+	# osc.send_command(b'*RST')					# resetting the osc
+	
+	# osc.send_command(b'BUZZ OFF')				# disables beeping, no response is expected
+	
+	# osc.send_command(b'CHDR?')					# disables beeping, no response is expected
+	# desc = osc.receive_command()
+	# print(desc)
+	
+	# osc.send_command(b'C1:VDIV 1.00E-04')				# disables beeping, no response is expected
+	
+	# # for i in range(1,10):
+		# # osc.send_command(b'ARM')
+		# # time.sleep(0.5)
+		# # osc.send_command(b'STOP')
+		# # time.sleep(0.5)
+	
+
+	
+	
+	# osc.send_command(b'WFSU?')					# ask for current waveform setup
+	# waveform_setup = osc.receive_command()
+	# print(waveform_setup)
+
+	# osc.send_command(b'WFSU SP,32,NP,1024,FP,0')	
+	
+	# osc.send_command(b'WFSU?')					# ask for current waveform setup
+	# waveform_setup = osc.receive_command()
+	# print(waveform_setup)
+	
+	# osc.send_command(b'FFTT?')					# ask for current waveform setup
+	# fft_opt = osc.receive_command()
+	# print(fft_opt)
+	
+	# osc.send_command(b'FFTT 5.00E4')			# try to set thee FFT to acertain frequency range
+
+	# osc.send_command(b'FFTT?')					# ask for current waveform setup
+	# fft_opt = osc.receive_command()
+	# print(fft_opt)
+
+	
+	
+	
+	
+	
+	
+	
 
 
 
