@@ -92,7 +92,20 @@ def test_get_save_wave():							# gets a wave from osc, processes it to the righ
 	wave_file.write(waveform)
 	wave_file.close()
 
+def test_set_params():
+	# TO USE SET_PARAMETER, IS NECESSARY TO DEFINE THE PARAMETER STRINGS
+	#osc.reset()
+	time.sleep(1)
+	osc.set_parameter(osc.VDIV,0.001,osc.CHANNEL_A)
+	osc.set_parameter(osc.VDIV,0.001,osc.CHANNEL_B)
+	
+	osc.enable_channel(osc.CHANNEL_B)
+	osc.enable_channel(osc.CHANNEL_A)
 
+	time.sleep(1)
+	osc.autoset()
+	
+	#osc.set_parameter(osc.VDIV,0.001,osc.CHANNEL_A);
 
 
 
@@ -108,8 +121,9 @@ if __name__ == "__main__":
 	desc = osc.receive_command()
 	print(desc)
 
+	test_set_params()
 
-	test_get_save_wave()
+	#test_get_save_wave()
 
 
 

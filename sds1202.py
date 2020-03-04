@@ -17,8 +17,46 @@ class sds1202():
 	
 	# CONSTANTS ? ###########################
 	
-	CHANNEL_A = "C1"
-	CHANNEL_B = "C2"
+	# Common commands, they have no parameters.
+	ID = b"*IDN"
+	COMPLETE = b"*OPC"
+	RESET = b"*RST"
+	# Specific oscilloscope commands, they have no parameters either
+	AUTOSET = b"ASET"
+	
+	
+	# Parameters that don't require a channel to set up
+	
+	TDIV = b'TDIV'
+	
+	DIGITAL_CHANNEL = b'DGCH'
+	
+	# Parameters which affect to a channel
+	
+	CHANNEL_A = b"C1"
+	CHANNEL_B = b"C2"
+	
+	ATTENUATION = b'ATTENUATION'				# attenuation OF THE CONNECTED PROBE only changes the display scale
+	BW_LIMIT = b'BWL'							# enables or disables low pass filter to limit the bandwidth (per channel)
+	# all those are for coupling and coupling modes
+	COUPLING = b'CPL'
+	AC = b'A'
+	DC = b'D'
+	ONE_M = b'1M'								# sets input impedance to 1MOhm		# useful to model high input impedance systems??
+	FIFTY_R = b'50'								# sets input impedance to 50Ohm		# useful to measure channels terminated with 50 Ohms impedances (coaxial?)
+	
+	OFFSET = b'OFFSET'							# set offset from 0V
+	VDIV = b'VOLT_DIV'							# to set volts/division
+	SKEW = b'SKEW'								# the measurement at different channels can be made non simultaneous, this means changing the skew
+
+	TRACE = b'TRA'							# enables/disables trace for a certain channel
+	
+	
+	ON = b'ON'									# correct format for on and off commands
+	OFF = b'OFF'
+	
+	
+	
 	
 	
 	# class internal variables ##############
@@ -90,16 +128,54 @@ class sds1202():
 		reply = self.sock.recv(4096)					# ATTENTION !!! DATA SIZE IS LIMITED HERE, THIS WON'T WORK WITH BIG WAVEWFORMS !!!
 		return(reply)
 	
-	def receive_data(self):								# can be used only with commands which return data, like WF
+	def receive_data(self):											# can be used only with commands which return data, like WF
 		logging.debug("receive_data method was called")
 		receive_command()								# receiving data is the same as command, adding processing of the data.
+	
+	
+	def enable_channel(self, channel):
+		self.set_parameter(self.TRACE,self.ON,channel)
+	
+	def disable_channel(self, channel):
+		self.set_parameter(self.TRACE,self.OFF,channel)	
+
+
+		
+	def set_parameter(self,param,value = None,channel = None):			# channel is optional
+		logging.debug("set_parameter method was called")
+		
+		# cmd should be a bytestring containing the parameter to address and the value (and maybe extra flags)
+		cmd = b''
+		if(channel != None):
+			cmd = cmd + channel										# add channel parameter only if required for the given command
+			cmd = cmd +b':'
+		
+		cmd = cmd + param
+		
+		if(value != None):
+			print("This is the cmd type" + str(type(cmd)))
+			if(isinstance(value,bytes) == True):		# some parameters are given as a string, not as a number, so no need to convert
+				cmd = cmd + b' '
+				cmd = cmd + value
+			else:
+				cmd = cmd + b' '
+				val_str = str(value)
+				val_bytes = val_str.encode()
+				cmd = cmd + val_bytes
+		
+		logging.debug("This is the full CMD string")
+		logging.debug(cmd)
 		
 		
-		
-		#*NOTE: The real voltage value is calculated as follows: V = code value*(vdiv/25)-voffset
-		# from this we deduct:
-		# - we need the vdiv value, and there is a command to query it
-		# - we need the voffset value, and there is a command to get it.
+		self.send_command(cmd)	
+
+	def reset(self):
+		self.send_command(self.RESET)
+
+	def autoset(self):
+		self.send_command(self.AUTOSET)
+
+
 	
 	def get_parameter(self,param):						# generic get parameter stuff, dealing with processing part of the data, can be used for timebase, sara
 		logging.debug("get_parameter method was called")
@@ -148,7 +224,13 @@ class sds1202():
 			timebase = self.get_parameter(b'TDIV?')
 			self.timebase = timebase
 			return(timebase)						# maybe better to return ok and thats all
-			
+
+
+
+	#*NOTE: The real voltage value is calculated as follows: V = code value*(vdiv/25)-voffset
+	# from this we deduct:
+	# - we need the vdiv value, and there is a command to query it
+	# - we need the voffset value, and there is a command to get it.			
 	def get_vdiv_ch1(self):
 			vdiv = self.get_parameter(b'C1:VDIV?')
 			self.volt_div_a = vdiv
