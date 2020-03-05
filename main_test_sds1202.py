@@ -102,7 +102,7 @@ def test_set_params():
 	osc.enable_channel(osc.CHANNEL_B)
 	osc.enable_channel(osc.CHANNEL_A)
 
-	time.sleep(1)
+	#time.sleep(1)
 	osc.autoset()
 	
 	#osc.set_parameter(osc.VDIV,0.001,osc.CHANNEL_A);
@@ -120,8 +120,52 @@ if __name__ == "__main__":
 	osc.send_command(b'*IDN?')					# asks for device description
 	desc = osc.receive_command()
 	print(desc)
+	
+	osc.send_command(b'GRDS HALF')
+	osc.send_command(b'INTS TRACE,100')
+	osc.send_command(b"DEF EQN,'FFTC1'")
+	osc.send_command(b'MTVP 100')			# 
+	osc.send_command(b'FFTC 500')			#
+	osc.send_command(b'FFTF ON')			#
+	osc.send_command(b'FFT_UNIT VRMS')		# sets fft to measure in vrms USEFUL !!!
+	#osc.send_command(b'FFT_UNIT DBM')		# sets fft to measure in dbm
+	#osc.send_command(b'FFT_UNIT DBVRMS')	# sets fft to measure in dbvrms
+	
+	osc.send_command(b'MEAD SKEW,C1-C2')	# measures skew between channels 1 and 2
+	#osc.send_command(b'C1-C2:MEAD? SKEW')	# ERROR!!! BUG!!! THIS COMMAND MAKES OSCILLOSCOPE UNRSEPONSIVE!!!
+	
+	osc.send_command(b'PACU ALL,C2')
+	osc.send_command(b'PACU ALL,C1')
+	
+	print(osc.get_parameter(b'C2:PAVA? RISE'))
 
-	test_set_params()
+	
+	
+	#print(osc.get_parameter(b'FFT_POSITION?'))
+
+	# osc.send_command(b'DI:SWITCH OFF')
+	# time.sleep(1)
+	# osc.send_command(b'DI:SWITCH ON')
+	# time.sleep(1)
+	# osc.send_command(b'DI:SWITCH OFF')
+	# time.sleep(1)
+	# osc.send_command(b'DI:SWITCH ON')
+	
+	# osc.send_command(b'D2:TRACE ON')
+
+	# osc.set_parameter(osc.SWITCH, osc.ON);
+	# time.sleep(1)
+	# osc.set_parameter(osc.SWITCH, osc.OFF);
+	# time.sleep(1)
+	# osc.set_parameter(osc.SWITCH, osc.ON);
+	# time.sleep(1)
+	# osc.set_parameter(osc.SWITCH, osc.OFF);
+	# time.sleep(1)
+	# osc.set_parameter(osc.SWITCH, osc.ON);
+	# time.sleep(1)
+	# osc.set_parameter(osc.SWITCH, osc.OFF);
+	# time.sleep(1)
+	#test_set_params()
 
 	#test_get_save_wave()
 

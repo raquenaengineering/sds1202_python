@@ -15,7 +15,7 @@ separator = "---------------------------------------------------"	# to separate 
 
 class sds1202():
 	
-	# CONSTANTS ? ###########################
+	# CONSTANTS ? ######################################################
 	
 	# Common commands, they have no parameters.
 	ID = b"*IDN"
@@ -49,13 +49,119 @@ class sds1202():
 	VDIV = b'VOLT_DIV'							# to set volts/division
 	SKEW = b'SKEW'								# the measurement at different channels can be made non simultaneous, this means changing the skew
 
-	TRACE = b'TRA'							# enables/disables trace for a certain channel
+	TRACE = b'TRA'								# enables/disables trace for a certain channel
+	UNIT = b'UNIT'								# changes units from a channel (1V, 1A 0.001V and so)
+
+	# all related with cursor measure
+	MEASURE = b'CURSOR_MEASURE'					# enables cursor measures OFF / ON / MANUAL/ TRACK
+	MANUAL = b'MANUAL'							# fixed
+	TRACK = b'TRACK'							# finds the relevant data?
+	
+	SET_CURSOR = b'CURSOR_SET'					# has too many options, implement later on
+	CURSOR_TYPE = b'CURSOR_TYPE'				# too many options also, implement later on
+	
+	CURSOR_VAL = b'CURSOR_VALUE'				# this parameter can't be set but only get. 
+	
+	# DIGITAL COMMANDS ######################
+	
+	DIGITAL_CHANNEL = b'DIGITAL_CHANNEL'		# NOT IMPLEMENTED IN SDS1202X
+	DIGITAL_STATE = b'DIGITAL_STATE'			# NOT IMPLEMENTED IN SDS1202X
+	DIGITAL_THRESHOLD = b'DIGITAL_THR'			# NOT IMPLEMENTED IN SDS1202X
+	
+	
+	DIGITAL = b'DI'								# supposedly a prefix to enable digital signaling
+	SWITCH = b'SWITCH'							# switches something to on ?? what ??
+	THRESHOLD_MODE = b'THRESHOLD_MODE'			# TTL, CMOS, LVCMOS33, LVCMOS25, CUSTOM
+	CUSTOM = b'CUSTOM' 							# set the custom threshold (useful for LVDS or 1V8 signals)
 	
 	
 	ON = b'ON'									# correct format for on and off commands
 	OFF = b'OFF'
 	
+	# DISPLAY COMMANDS ######################
 	
+	DOT_JOIN = b'DOT_JOIN'					# joins lines between two measurement points
+	DISPLAY_GRID = b'GRID_DISPLAY'			# options to display grid, FULL/HALF/OFF
+	GRID_INTENSITY = b'INTENSITY'			# intensity of the grid, requires GRID/TRACE, 0 to 100. colon to separate parameters.
+	MENU = b'MENU'							# turns menu on and off
+	PERSIST_SETUP = b'PERSIST_SETUP'		# persistence of traces OFF/1/5/10/30/INFINITE
+	
+	
+	# HISTORY COMMANDS ######################
+	
+	
+	# MATH COMMANDS #########################
+	
+	DEFINE = b'DEFINE'							# used to define the kind of mathematical operation to be performed (FFT, +, -, *) # FORMAT IS AWFUL: osc.send_command(b"DEF EQN,'FFTC1'")
+	INVERT = b'INVS'							# inverts the trace given as a paraneter, is ON OFF command (MATH also can be inverted) EX: MATH: INVS ON C1: INVS ON
+	MATH_VERT_DIV = b'MATH_VERT_DIV'			# math plot vertical divisions, not useable for FFT operation
+	MATH_VERT_POS = b'MATH_VERT_POS'			# position for the math plot in the vertical axis (probably also applies to fft)
+	
+	# fft subset from math ##################
+	
+	FFT_CENTER = b'FFT_CENTER'					# sets the center for the fft VERY COOL PARAMETER !!!
+	FFT_FULLSCREEN = b'FFT_FULLSCREEN'			# fft takes fulls scree, requires parameter ON/OFF/EXCLU
+	FFT_POSITION = b'FFT_POSITION'				# fft position (FFT_POSITION) SYNTAX NOT CLEAR, REVIEW THIS WITH DATASHEET !!!
+	FFT_SCALE = b'FFT_SCALE'					# scales the fft, values depend on if its dbm or Vrms (0.1 to 20)(0.001 to 20) syntax unclear !!!
+	FFT_TDIV = b'FFT_TDIV'						# ONLY QUERIES, NO WRITE !!!
+	FFT_UNIT = b'FFT_UNIT'						# changes between dbm and vrms valid params: (VRMS, DBM, DBVRMS)
+	FFT_VRMS = b'VRMS'
+	FFT_VRMS = b'DBM'
+	FFT_VRMS = b'DBVRMS'
+	FFT_WINDOW = b'FFT_WINDOW'
+	
+	# window subset from fft ################
+	
+	FFT_WINDOW_RECT = b'RECT'					# useful for fast transient signals
+	FFT_WINDOW_BLACKMAN = b'BLAC'				# useful for small signals, time resolution reduced
+	FFT_WINDOW_HANNING = b'HANN'				# good for frequencies close together (good freq resolution)
+	FFT_WINDOW_HAMMING = b'HAMM'				# ???
+	FFT_WINDOW_FLATTOP = b'FLAT'				# best for accurate amplitude measurement in freq peaks
+	
+	
+	# MEASURE COMMANDS ######################
+	
+	CYMOMETER = b'CYMOMETER'					# can only be queried!!! measures zero crosses, and returns the frequency counter(in E notation)
+	
+	MEASURE_DELAY = b'MEASURE_DELAY' 			#requires two channels to compare! to get the data requires query!!!
+	# subest with possible delay modes
+	PHASE_DIFFERENCE = b'PHA'
+	FIRST_RISING_FIRST_RISING = b'FRR'			# maybe reduce syntax to RISING_RISING
+	FIRST_RISING_FIRST_FALLING = b'FRF'
+	FIRST_FALLING_FIRST_RISING = b'FFR'
+	FIRST_FALLING_FIRST_FALLING = b'FFF'
+	FIRST_RISING_LAST_RISING = b'LRR'
+	FIRST_RISING_LAST_FALLING = b'LRF'
+	FIRST_FALLING_LAST_RISING = b'LFR'
+	FIRST_FALLING_LAST_FALLING = b'LFF'
+	SKEW = b'SKEW'								# most relevant: two edges of the same type
+	
+	PARAMETER_CUSTOM = b'PACU'					# useful to measure plenty of parameters, see parameters below, value queried with PAVA?
+	# subset with possible custom parameters
+	PEAK_TO_PEAK = b'PKPK'
+	MAX_VAL = b'MAX'
+	MIN_VAL = b'MIN'
+	AMPL = b'AMPL'
+	TOP_VAL = b'TOP'
+	BASE_VAL = b'BASE'
+	CYCLE_MEAN = b'CMEAN'
+	MEAN = b'MEAN'
+	RMS = b'RMS'
+	CRMS = b'CRMS'
+	OVERSHOOT_FALLING = b'OVSN'
+	PRESHOOT_FALLING = b'FPRE'
+	OVERSHOOT_RISING = b'OVSP'
+	PRESHOOT_RISING = b'RPRE'
+	PERIOD = b'PER'								# start implementing this
+	FREQUENCY = b'FREQ'							# implement this
+	POSITIVE_PULSE_WIDTH = b'PWID'
+	NEGATIVE_PULSE_WIDTH = b'NWID'
+	RISE_TIME = b'RISE'
+	FALL_TIME = b'FALL'
+	BURST_WIDTH = b'WID'
+	POSITIVE_DUTY = b'DUTY'
+	NEGATIVE_DUTY = b'NDUTY'
+	ALL = b'ALL'								# implement this
 	
 	
 	
@@ -115,9 +221,10 @@ class sds1202():
 
 	def send_command(self,cmd):
 		logging.debug("send_command method was called")
+		logging.debug(cmd)
 		try:
 			self.sock.sendall(cmd)
-			time.sleep(0.1)								# works fine as short as 0.1 # maybe not necessary??? check how to do this async.
+			time.sleep(0.2)								# works fine as short as 0.1 # maybe not necessary??? check how to do this async.
 		except socket.error:
 			logging.error("Failed to send")
 			logging.error("QUITTING")
