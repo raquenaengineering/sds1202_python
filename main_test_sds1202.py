@@ -6,7 +6,7 @@ from sds1202 import *
 
 # GLOBAL VARIABLES #####################################################
 
-remote_ip = "192.168.42.190"
+remote_ip = "192.168.0.100"
 sock_port = 5024
 
 # required by user_manual_test
@@ -108,7 +108,38 @@ def test_set_params():
 	#osc.set_parameter(osc.VDIV,0.001,osc.CHANNEL_A);
 
 
+def test_enable_collect_measures():
+	
+	# a maximum of 5 measures is allowed, if more, probably the old are replaced ???!!!
+	
+	osc.enable_measure(osc.CHANNEL_A, osc.PEAK_TO_PEAK)			# works
+	osc.enable_measure(osc.CHANNEL_B, osc.PEAK_TO_PEAK)			# works 
+	
+	osc.enable_measure(osc.CHANNEL_A, osc.FREQUENCY)			# works
+	osc.enable_measure(osc.CHANNEL_B, osc.FREQUENCY)			# works
+	
+	osc.enable_measure(osc.CHANNEL_A, osc.ALL)			# works
+	
+	peakval = osc.measure(osc.CHANNEL_B, osc.PEAK_TO_PEAK)		# !!! returns /0 as a first character, reading wrong ???
+	print(peakval)
+	peakval = osc.measure(osc.CHANNEL_B, osc.PEAK_TO_PEAK)		# !!! returns /0 as a first character, reading wrong ???
+	print(peakval)
+	
+	freq = osc.measure(osc.CHANNEL_A, osc.FREQUENCY)		# answer starts with 'CC1', strange???
+	freq = osc.measure(osc.CHANNEL_B, osc.FREQUENCY)		# same with 'CC2'
 
+	osc.enable_measure(osc.CHANNEL_B, osc.ALL)			# works
+	time.sleep(3)
+	allparams = osc.measure(osc.CHANNEL_B, osc.ALL)		# strange extra random character at the beginning of the request.
+	
+	osc.enable_measure(osc.CHANNEL_A, osc.ALL)		# works, required before measuring all channels
+	time.sleep(3)
+	allparams = osc.measure(osc.CHANNEL_A, osc.ALL)		# works
+
+
+
+
+	
 # MAIN FUNCTION ########################################################
 
 if __name__ == "__main__":
@@ -121,23 +152,31 @@ if __name__ == "__main__":
 	desc = osc.receive_command()
 	print(desc)
 	
-	osc.send_command(b'GRDS HALF')
-	osc.send_command(b'INTS TRACE,100')
-	osc.send_command(b"DEF EQN,'FFTC1'")
-	osc.send_command(b'MTVP 100')			# 
-	osc.send_command(b'FFTC 500')			#
-	osc.send_command(b'FFTF ON')			#
-	osc.send_command(b'FFT_UNIT VRMS')		# sets fft to measure in vrms USEFUL !!!
-	#osc.send_command(b'FFT_UNIT DBM')		# sets fft to measure in dbm
-	#osc.send_command(b'FFT_UNIT DBVRMS')	# sets fft to measure in dbvrms
+	osc.measure(osc.CHANNEL_A,osc.CUSTOM)
 	
-	osc.send_command(b'MEAD SKEW,C1-C2')	# measures skew between channels 1 and 2
-	#osc.send_command(b'C1-C2:MEAD? SKEW')	# ERROR!!! BUG!!! THIS COMMAND MAKES OSCILLOSCOPE UNRSEPONSIVE!!!
+	# osc.send_command(b'GRDS HALF')
+	# osc.send_command(b'INTS TRACE,100')
+	# osc.send_command(b"DEF EQN,'FFTC1'")	
+	# osc.send_command(b'MTVP 100')			# 
+	# osc.send_command(b'FFTC 500')			#
+	# osc.send_command(b'FFTF ON')			#
+	# osc.send_command(b'FFT_UNIT VRMS')		# sets fft to measure in vrms USEFUL !!!
+	# #osc.send_command(b'FFT_UNIT DBM')		# sets fft to measure in dbm
+	# #osc.send_command(b'FFT_UNIT DBVRMS')	# sets fft to measure in dbvrms
 	
-	osc.send_command(b'PACU ALL,C2')
-	osc.send_command(b'PACU ALL,C1')
+	# osc.send_command(b'MEAD SKEW,C1-C2')	# measures skew between channels 1 and 2
+	# #osc.send_command(b'C1-C2:MEAD? SKEW')	# ERROR!!! BUG!!! THIS COMMAND MAKES OSCILLOSCOPE UNRSEPONSIVE!!!
 	
-	print(osc.get_parameter(b'C2:PAVA? RISE'))
+	test_enable_collect_measures()			# for methods and variables to do with measures
+	
+	
+
+	
+	
+	#osc.send_command(b'PACU ALL,C2')
+	#osc.send_command(b'PACU ALL,C1')
+	
+	#print(osc.get_parameter(b'C2:PAVA? RISE'))
 
 	
 	

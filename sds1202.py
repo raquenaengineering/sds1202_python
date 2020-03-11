@@ -224,7 +224,7 @@ class sds1202():
 		logging.debug(cmd)
 		try:
 			self.sock.sendall(cmd)
-			time.sleep(0.2)								# works fine as short as 0.1 # maybe not necessary??? check how to do this async.
+			time.sleep(0.5)								# FASTER THAN 0.5 GIVS PROBLEMS WITH SOME COMMANDS !!! # maybe not necessary??? check how to do this async.
 		except socket.error:
 			logging.error("Failed to send")
 			logging.error("QUITTING")
@@ -239,11 +239,40 @@ class sds1202():
 		logging.debug("receive_data method was called")
 		receive_command()								# receiving data is the same as command, adding processing of the data.
 	
+	def measure_all(self, channel):									# gets all measurement parameters from a channel (ampl, minval, maxval, freq, and so on)
+		pass
+	def measure(self, channel, param):						# gets a certain parameter from a channel.
+		logging.debug("measure_param method was called")
+		cmd = b''							# cmd is an empty bytestring
+		cmd = cmd + channel 				# first of all this requires the channel to request
+		cmd = cmd + b':'					# required between channel an parameter request
+		cmd = cmd + b'PAVA?'				# asks for parameter value
+		cmd = cmd + b' '					# required before the parameter to request
+		cmd = cmd + param					# add requested parameter
+		self.send_command(cmd)				# make a request
+		measure = self.receive_command()
+		print(measure)
+		return(measure)
+		
+	def enable_measure(self, channel, param):				# enables the measurement of certain parameter (it shows at the osc screen)
+		cmd = b''
+		cmd = cmd + self.PARAMETER_CUSTOM			# not clear about this !!!
+		cmd = cmd + b' '
+		cmd = cmd + param
+		cmd = cmd + b','
+		cmd = cmd + channel
+		self.send_command(cmd)
+		measure = self.receive_command()
+		print(measure)
+		return(measure)		
+	
 	
 	def enable_channel(self, channel):
+		logging.debug("enable_channel method was called")
 		self.set_parameter(self.TRACE,self.ON,channel)
 	
 	def disable_channel(self, channel):
+		logging.debug("disable_channel method was called")
 		self.set_parameter(self.TRACE,self.OFF,channel)	
 
 
