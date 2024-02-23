@@ -16,9 +16,15 @@ separator = "---------------------------------------------------"	# to separate 
 class sds1202():
 	
 	# CONSTANTS ? ######################################################
-	
+
+	SOCKET_PORT = 5024													# even though currently used in config, this parameter can't be configured, so it belongs to the class
+
+	IDN = b"Siglent Technologies,SDS1202X-E"								# ID, to confirm we're connecting to the right device.
+	# IDN = "Siglent Technologies,SDS1202X-E,SDS1ECDD2R1137,1.3.26"
+
+
 	# Common commands, they have no parameters.
-	ID = b"*IDN"
+	ID = b"*IDN?"
 	COMPLETE = b"*OPC"
 	RESET = b"*RST"
 	# Specific oscilloscope commands, they have no parameters either
@@ -164,41 +170,36 @@ class sds1202():
 	ALL = b'ALL'								# implement this
 	
 	
-	
-	# class internal variables ##############
-	
-	sock = None;								# We need to create a socket to connect to the osc. via network
-	dev_ip = None;								# ip of the oscilloscope
-	sock_port = None;							# port in which the sds1202 will be listening for connections
-	connected = False							# keep track if connection established
-		
-	
-	# Variables which represent confuguration data into the osc: (copies of the internal osc variables)
-	
-	volt_div_a = None;							# volts per division, for each channel
-	volt_div_b = None;							# float numbers
-	
-	voffs_a = None;								# offsets NOTE: offset values are relative to volts per divission !!!
-	voffs_b = None;								# float numbers
-	
-	timebase = None;							# time base of our measurements, common to both channels
-	
-	sample_rate = None;							# sample rate, common to both channels
-	
-	
-	
-
-	sec_div = None;
 
 	# class methods #########################
 	
-	def __init__(self,ip_address = None, port = None):
+	def __init__(self,ip_address = None, port = None):		# review constructor !!! if not possible to change port, no need for parameter.
 		logging.debug("__init__ method was called")
-		
+
+
 		self.dev_ip = ip_address							# if ip address is defined, save it to object.
 		self.sock_port = port								# same for socket port, THIS PARAMETERS ARE REQUIRED TO START A CONNECTION.
-		
-		# creating the socket 
+
+		# class internal variables ##############
+
+		self.sock = None;  # We need to create a socket to connect to the osc. via network
+		self.connected = False  # keep track if connection established
+
+		# Variables which represent confuguration data into the osc: (copies of the internal osc variables)
+
+		self.volt_div_a = None;  # volts per division, for each channel
+		self.volt_div_b = None;  # float numbers
+
+		self.voffs_a = None;  # offsets NOTE: offset values are relative to volts per divission !!!
+		self.voffs_b = None;  # float numbers
+
+		self.timebase = None;  # time base of our measurements, common to both channels
+
+		self.sample_rate = None;  # sample rate, common to both channels
+
+		self.sec_div = None;
+
+		# creating the socket
 		try:
 			self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)			# what does this mean??
 		except socket.error:
@@ -228,7 +229,7 @@ class sds1202():
 		except socket.error:
 			logging.error("Failed to send")
 			logging.error("QUITTING")
-			sys.exit()		
+			sys.exit()
 
 	def receive_command(self):
 		logging.debug("receive_command method was called")
@@ -237,8 +238,25 @@ class sds1202():
 	
 	def receive_data(self):											# can be used only with commands which return data, like WF
 		logging.debug("receive_data method was called")
-		receive_command()								# receiving data is the same as command, adding processing of the data.
-	
+		receive_command()											# receiving data is the same as command, adding processing of the data.
+
+	def get_id(self):
+		self.send_command(self.ID)
+		idn = self.receive_command()
+		return(idn)
+
+	def confirm_id(self):
+		idn = self.get_id()
+		print("received ID")
+		print(idn)
+		print("expected ID")
+		print(self.IDN)
+
+		if self.IDN in idn:
+			print("IDN is correct, identity confirmed")
+
+
+
 	def measure_all(self, channel):									# gets all measurement parameters from a channel (ampl, minval, maxval, freq, and so on)
 		pass
 	def measure(self, channel, param):						# gets a certain parameter from a channel.
@@ -485,3 +503,14 @@ class sds1202():
 		print(self.timebase)
 		print("Sample Rate: ")
 		print(self.sample_rate)
+
+
+
+if __name__ == "__main__":
+
+	osc = sds1202(ip_address = "192.168.0.201", port = 5024)
+	osc.connect()
+	osc.confirm_id()
+	osc.get_osc_current_config()
+	osc.print_osc_config_params()
+
