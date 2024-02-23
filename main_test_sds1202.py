@@ -3,11 +3,12 @@
 
 from sds1202 import *
 
+import config
 
 # GLOBAL VARIABLES #####################################################
 
-remote_ip = "192.168.0.100"
-sock_port = 5024
+remote_ip = config.OSC_IP
+port = config.OSC_PORT
 
 # required by user_manual_test
 
@@ -146,7 +147,7 @@ if __name__ == "__main__":
 	
 	#user_manual_test()
 	
-	osc = sds1202(remote_ip, sock_port)			# try to implement a network search to find the oscilloscope (FUTURE GOALS, NOT NOW)
+	osc = sds1202(remote_ip, port)			# try to implement a network search to find the oscilloscope (FUTURE GOALS, NOT NOW)
 	osc.connect()
 	osc.send_command(b'*IDN?')					# asks for device description
 	desc = osc.receive_command()
